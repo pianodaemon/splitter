@@ -30,6 +30,22 @@ our $VERSION = '0.01';
 
 # Preloaded methods go here.
 
+sub seek_evars_out {
+    my @evars = @_;
+    foreach (@evars) {
+	my $emsg = sprintf 'Environment variable %s is not present', $_;
+        die($emsg) if (not exists($ENV{$_}));
+    }
+}
+
+sub send {
+
+}
+
+sub receive {
+
+}
+
 1;
 __END__
 # Below is stub documentation for your module. You'd better edit it!
