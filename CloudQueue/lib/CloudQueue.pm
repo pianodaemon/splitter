@@ -3,15 +3,16 @@ package CloudQueue;
 use 5.030000;
 use strict;
 use warnings;
+use Amazon::SQS::Simple;
 
 require Exporter;
 
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
-    'all' => [ qw(new, send, receive) ],
-    'producer' => [ qw(new, send) ],
-    'consumer' => [ qw(new, receive, delete) ],
+    'all' => [ qw(new send receive) ],
+    'producer' => [ qw(new send) ],
+    'consumer' => [ qw(new receive delete) ],
 );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -65,7 +66,7 @@ sub send {
     my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    $q->SendMessage($m);
+    $q->SendMessage($m, ("MessageGroupId" => 1));
 }
 
 sub receive {
