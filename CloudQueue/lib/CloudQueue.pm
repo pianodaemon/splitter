@@ -61,11 +61,11 @@ sub send {
     {
         my $r_response;
         my $f_send = sub {
-
             $r_response = $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
+	    return true;
         };
 
-        if ( eval { &$f_send(); return true; } ) {
+        if ( eval { return &$f_send(); } ) {
             return $r_response->{MessageId};
 	}
     }
