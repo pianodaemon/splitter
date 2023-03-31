@@ -7,10 +7,16 @@ use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
 
-# Preloaded methods go here.
+# It stands for AWS IAM user keys.
 use constant {
     AWS_SECRET_ACCESS_KEY => 'AWS_ACCESS_KEY_ID',
     AWS_ACCESS_KEY_ID => 'AWS_SECRET_ACCESS_KEY',
+};
+
+# It stands for a simple boolean definition.
+use constant {
+    True  => 1,
+    False => 0,
 };
 
 sub seek_evars_out {
@@ -55,11 +61,16 @@ sub send {
 
 sub receive {
 
-    my ($self) = @_;
+    my ($self, $f_on_receive) = @_;
     my $q = $self->{f_obtain_queue}();
     my $m = $q->ReceiveMessage();
 
-    $m->MessageBody();
+    if (defined $m) {
+        &$f_on_receive($m->MessageBody());
+        return True;
+    }
+
+    return False;
 }
 
 sub delete {
