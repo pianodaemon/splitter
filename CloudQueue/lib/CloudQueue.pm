@@ -3,6 +3,7 @@ package CloudQueue;
 use 5.030000;
 use strict;
 use warnings;
+
 use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
@@ -15,8 +16,8 @@ use constant {
 
 # It stands for a simple boolean definition.
 use constant {
-    True  => 1,
-    False => 0,
+    true  => 1,
+    false => 0,
 };
 
 sub seek_evars_out {
@@ -65,12 +66,10 @@ sub receive {
     my $q = $self->{f_obtain_queue}();
     my $m = $q->ReceiveMessage();
 
-    if (defined $m) {
-        &$f_on_receive($m->MessageBody());
-        return True;
-    }
+    return false if (not defined $m);
 
-    return False;
+    &$f_on_receive($m->MessageBody());
+    return true;
 }
 
 sub delete {
