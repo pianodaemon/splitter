@@ -58,8 +58,23 @@ sub send {
     my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    my $r_response = $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
-    return $r_response->{MessageId};
+    {
+        my $r_response;
+        my $f_send = sub {
+
+            $r_response = $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
+        };
+
+        if ( eval { &$f_send(); return true; } ) {
+            return $r_response->{MessageId};
+	}
+    }
+
+    # Reach in case of failure
+    my $error = $@ || 'Unknown failure';
+    warn "Message could not been sent: $error";
+
+    return false;
 }
 
 sub receive {
