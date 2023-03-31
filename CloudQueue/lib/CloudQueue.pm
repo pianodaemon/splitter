@@ -5,22 +5,6 @@ use strict;
 use warnings;
 use Amazon::SQS::Simple;
 
-require Exporter;
-
-our @ISA = qw(Exporter);
-
-our %EXPORT_TAGS = (
-    'all' => [ qw(new send receive) ],
-    'producer' => [ qw(new send) ],
-    'consumer' => [ qw(new receive delete) ],
-);
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw(
-
-);
-
 our $VERSION = '0.01';
 
 # Preloaded methods go here.
