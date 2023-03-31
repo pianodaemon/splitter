@@ -58,7 +58,8 @@ sub send {
     my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
+    my $r_response = $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
+    return $r_response->{MessageId};
 }
 
 sub receive {
