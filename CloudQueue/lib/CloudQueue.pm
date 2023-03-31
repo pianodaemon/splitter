@@ -8,42 +8,73 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use CloudQueue ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-	
-) ] );
+our %EXPORT_TAGS = (
+    'all' => [ qw(send, receive) ],
+    'producer' => [ qw(send) ],
+    'consumer' => [ qw(receive) ],
+);
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw(
-	
+
 );
 
 our $VERSION = '0.01';
 
-
 # Preloaded methods go here.
+use constant {
+    AWS_SECRET_ACCESS_KEY => 'AWS_ACCESS_KEY_ID',
+    AWS_ACCESS_KEY_ID => 'AWS_SECRET_ACCESS_KEY',
+};
 
 sub seek_evars_out {
+
     my @evars = @_;
     foreach (@evars) {
-	my $emsg = sprintf 'Environment variable %s is not present', $_;
+        my $emsg = sprintf 'Environment variable %s is not present', $_;
         die($emsg) if (not exists($ENV{$_}));
     }
 }
 
+sub new {
+
+   # Searching for a few environment variables required
+   seek_evars_out(
+       (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID)
+   );
+
+   my ($class, $queue_url) = shift;
+   my $sqs = new Amazon::SQS::Simple(
+       SecretKey => $ENV{AWS_SECRET_ACCESS_KEY},
+       AWSAccessKeyId => $ENV{AWS_ACCESS_KEY_ID}
+   );
+
+   my $self = {
+       m_queue_url    => $queue_url,
+       m_sqs          => $sqs,
+       f_obtain_queue => sub { $sqs->GetQueue($queue_url); },
+   };
+
+   bless $self, $class;
+   return $self;
+}
+
 sub send {
 
+    my $self = shift;
+    my $q = $self->{f_obtain_queue}();
+
+    $q->SendMessage(shift);
 }
 
 sub receive {
 
+    my $self = shift;
+    my $q = $self->{f_obtain_queue}();
+    my $m = $q->ReceiveMessage();
+
+    $m->MessageBody();
 }
 
 1;
