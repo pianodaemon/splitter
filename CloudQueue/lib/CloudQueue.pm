@@ -65,16 +65,13 @@ sub send {
 	    return true;
         };
 
-        if ( eval { return &$f_send(); } ) {
-            return $r_response->{MessageId};
+        if (eval { return &$f_send(); }) {
+            return ($r_response->{MessageId}, undef);
 	}
     }
 
     # Reach in case of failure
-    my $error = $@ || 'Unknown failure';
-    warn "Message could not been sent: $error";
-
-    return false;
+    return (undef, $@ || 'Unknown failure');
 }
 
 sub receive {
