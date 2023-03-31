@@ -76,11 +76,14 @@ sub send {
 
 sub receive {
 
-    my ($self) = @_;
+    my ($self, $f_on_receive) = @_;
     my $q = $self->{f_obtain_queue}();
     my $m = $q->ReceiveMessage();
 
-    return ($m->MessageBody(), undef) if (defined $m);
+    if (defined $m) {
+        &$f_on_receive($m->MessageBody());
+        return ($m->ReceiptHandle(), undef);
+    }
 
     # Reach in case of failure
     return (undef, 'no messages to receive yet');
