@@ -9,9 +9,9 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
-    'all' => [ qw(send, receive) ],
-    'producer' => [ qw(send) ],
-    'consumer' => [ qw(receive) ],
+    'all' => [ qw(new, send, receive) ],
+    'producer' => [ qw(new, send) ],
+    'consumer' => [ qw(new, receive) ],
 );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
