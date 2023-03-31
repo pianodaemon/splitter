@@ -46,7 +46,7 @@ sub new {
 
    my ($class, $queue_url) = @_;
    my $sqs = new Amazon::SQS::Simple(
-       SecretKey => $ENV{AWS_SECRET_ACCESS_KEY},
+       SecretKey      => $ENV{AWS_SECRET_ACCESS_KEY},
        AWSAccessKeyId => $ENV{AWS_ACCESS_KEY_ID}
    );
 
@@ -75,6 +75,14 @@ sub receive {
     my $m = $q->ReceiveMessage();
 
     $m->MessageBody();
+}
+
+sub delete {
+
+    my ($self, $m) = @_;
+    my $q = $self->{f_obtain_queue}();
+
+    $q->DeleteMessage($m);
 }
 
 1;
