@@ -43,6 +43,7 @@ sub new {
    );
 
    my $self = {
+       m_birth        => time,
        m_queue_url    => $queue_url,
        m_sqs          => $sqs,
        f_obtain_queue => sub { $sqs->GetQueue($queue_url); },
@@ -57,7 +58,7 @@ sub send {
     my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    $q->SendMessage($m, ("MessageGroupId" => 1));
+    $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
 }
 
 sub receive {
