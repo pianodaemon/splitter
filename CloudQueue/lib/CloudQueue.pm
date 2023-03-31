@@ -94,7 +94,17 @@ sub delete {
     my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    $q->DeleteMessage($m);
+    my $f_delete = sub {
+        $q->DeleteMessage($m);
+	return true;
+    };
+
+    if (eval { return &$f_delete(); }) {
+        return undef;
+    }
+
+    # Reach in case of failure
+    return $@ || 'Unknown failure';
 }
 
 true;
