@@ -76,14 +76,14 @@ sub send {
 
 sub receive {
 
-    my ($self, $f_on_receive) = @_;
+    my ($self) = @_;
     my $q = $self->{f_obtain_queue}();
     my $m = $q->ReceiveMessage();
 
-    return false if (not defined $m);
+    return ($m->MessageBody(), undef) if (defined $m);
 
-    &$f_on_receive($m->MessageBody());
-    return true;
+    # Reach in case of failure
+    return (undef, 'no messages to receive yet');
 }
 
 sub delete {
@@ -94,4 +94,4 @@ sub delete {
     $q->DeleteMessage($m);
 }
 
-1;
+true;
