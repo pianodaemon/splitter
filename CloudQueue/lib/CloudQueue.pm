@@ -44,7 +44,7 @@ sub new {
        (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID)
    );
 
-   my ($class, $queue_url) = shift;
+   my ($class, $queue_url) = @_;
    my $sqs = new Amazon::SQS::Simple(
        SecretKey => $ENV{AWS_SECRET_ACCESS_KEY},
        AWSAccessKeyId => $ENV{AWS_ACCESS_KEY_ID}
@@ -62,15 +62,15 @@ sub new {
 
 sub send {
 
-    my $self = shift;
+    my ($self, $m) = @_;
     my $q = $self->{f_obtain_queue}();
 
-    $q->SendMessage(shift);
+    $q->SendMessage($m);
 }
 
 sub receive {
 
-    my $self = shift;
+    my ($self) = @_;
     my $q = $self->{f_obtain_queue}();
     my $m = $q->ReceiveMessage();
 
