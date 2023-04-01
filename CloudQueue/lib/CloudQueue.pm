@@ -96,6 +96,15 @@ sub receive {
     return (undef, 'no messages to receive yet');
 }
 
+sub receive_json {
+
+    my ($self, $f_on_receive) = @_;
+    my $f_on_receive_wrapper = sub {
+        &$f_on_receive(decode_json(shift));
+    };
+    return $self->receive($f_on_receive_wrapper);
+}
+
 sub delete {
 
     my ($self, $m) = @_;
