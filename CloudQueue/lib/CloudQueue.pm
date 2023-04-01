@@ -4,6 +4,7 @@ use 5.030000;
 use strict;
 use warnings;
 
+use JSON;
 use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
@@ -72,6 +73,12 @@ sub send {
 
     # Reach in case of failure
     return (undef, $@ || 'Unknown failure');
+}
+
+sub send_json {
+
+    my $self = shift;
+    return $self->send(encode_json(shift));
 }
 
 sub receive {
