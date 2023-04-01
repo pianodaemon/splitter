@@ -102,6 +102,7 @@ sub receive_json {
     my $f_on_receive_wrapper = sub {
         &$f_on_receive(decode_json(shift));
     };
+
     return $self->receive($f_on_receive_wrapper);
 }
 
