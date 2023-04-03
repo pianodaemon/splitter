@@ -75,12 +75,6 @@ sub send {
     return (undef, $@ || 'Unknown failure');
 }
 
-sub send_json {
-
-    my $self = shift;
-    return $self->send(encode_json(shift));
-}
-
 sub receive {
 
     my ($self, $f_on_receive) = @_;
@@ -94,16 +88,6 @@ sub receive {
 
     # Reach in case of failure
     return (undef, 'no messages to receive yet');
-}
-
-sub receive_json {
-
-    my ($self, $f_on_receive) = @_;
-    my $f_on_receive_wrapper = sub {
-        &$f_on_receive(decode_json(shift));
-    };
-
-    return $self->receive($f_on_receive_wrapper);
 }
 
 sub delete {
@@ -122,6 +106,23 @@ sub delete {
 
     # Reach in case of failure
     return $@ || 'Unknown failure';
+}
+
+
+sub send_json {
+
+    my $self = shift;
+    return $self->send(encode_json(shift));
+}
+
+sub receive_json {
+
+    my ($self, $f_on_receive) = @_;
+    my $f_on_receive_wrapper = sub {
+        &$f_on_receive(decode_json(shift));
+    };
+
+    return $self->receive($f_on_receive_wrapper);
 }
 
 true;
