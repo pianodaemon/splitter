@@ -4,7 +4,7 @@ use 5.030000;
 use strict;
 use warnings;
 
-use JSON;
+use Carp qw(cluck);
 use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
@@ -108,21 +108,39 @@ sub delete {
     return $@ || 'Unknown failure';
 }
 
+sub AUTOLOAD {
 
-sub send_json {
+    our $AUTOLOAD;
 
-    my $self = shift;
-    return $self->send(encode_json(shift));
-}
+    # Remove package name
+    (my $method = $AUTOLOAD) =~ s/.*:://s;
 
-sub receive_json {
+    # Load a couple of jsonified versions for this module's methods
+    if ($method =~ /^(receive|send)_json$/) {
 
-    my ($self, $f_on_receive) = @_;
-    my $f_on_receive_wrapper = sub {
-        &$f_on_receive(decode_json(shift));
-    };
+        eval q{
 
-    return $self->receive($f_on_receive_wrapper);
+            use JSON;
+
+            sub send_json {
+
+                my $self = shift;
+                return $self->send(encode_json(shift));
+            }
+
+            sub receive_json {
+
+                my ($self, $f_on_receive) = @_;
+                my $f_on_receive_wrapper = sub {
+                    &$f_on_receive(decode_json(shift));
+                };
+
+                return $self->receive($f_on_receive_wrapper);
+            }
+	};
+	cluck $@ if $@; # if typo snuck in
+	goto &{$method};
+    }
 }
 
 true;
