@@ -21,6 +21,9 @@ use constant {
     false => 0,
 };
 
+# It enables debugging verbosity
+our $debug = false;
+
 sub seek_evars_out {
 
     my @evars = @_;
@@ -70,7 +73,7 @@ sub send {
     }
 
     # Reach in case of failure
-    printf STDERR "Single message could not been sent: %s\n", $@ || 'Unknown failure';
+    $debug and printf STDERR "Single message could not been sent: %s\n", $@ || 'Unknown failure';
     return;
 }
 
@@ -86,7 +89,7 @@ sub receive {
     }
 
     # Reach in case of failure
-    printf STDERR "%s\n", 'No messages to receive yet';
+    $debug and printf STDERR "%s\n", 'No messages to receive yet';
     return;
 }
 
@@ -115,7 +118,7 @@ sub send_batch {
     }
 
     # Reach in case of failure
-    printf STDERR "Batch of messages could not been sent: %s", $@ || 'Unknown failure';
+    $debug and printf STDERR "Batch of messages could not been sent: %s", $@ || 'Unknown failure';
     return ();
 }
 
@@ -130,7 +133,7 @@ sub delete {
     };
 
     unless (eval { return &$f_delete(); }) {
-        printf STDERR "Message with receipt %m could not be deleted: %s", $@ || 'Unknown failure';
+        $debug and printf STDERR "Message with receipt %m could not be deleted: %s", $@ || 'Unknown failure';
     }
 
     return;
