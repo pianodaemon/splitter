@@ -4,7 +4,7 @@ use 5.030000;
 use strict;
 use warnings;
 
-use Carp qw(cluck);
+use Carp qw(croak cluck);
 use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
