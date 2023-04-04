@@ -45,7 +45,6 @@ sub new {
 
    my $self = {
        m_birth        => time,
-       m_queue_url    => $queue_url,
        f_obtain_queue => sub { $sqs->GetQueue($queue_url); },
    };
 
