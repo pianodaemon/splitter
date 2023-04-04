@@ -66,13 +66,13 @@ sub send {
         };
 
         if (eval { return &$f_send(); }) {
-            return ($r_response->{MessageId}, undef);
+            return $r_response->{MessageId};
 	}
     }
 
     # Reach in case of failure
-    my $err = printf "Single message could not been sent: %s", $@ || 'Unknown failure';
-    return (undef, $err);
+    printf STDERR "Single message could not been sent: %s\n", $@ || 'Unknown failure';
+    return;
 }
 
 sub receive {
@@ -87,7 +87,8 @@ sub receive {
     }
 
     # Reach in case of failure
-    return (undef, 'no messages to receive yet');
+    printf STDERR "%s\n", 'No messages to receive yet';
+    return;
 }
 
 sub send_batch {
@@ -110,31 +111,30 @@ sub send_batch {
 
         if (eval { return &$f_batch(); }) {
             my @responses = map { $_->{MessageId} } @{$r_resps};
-            return (@responses, undef);
+            return @responses;
 	}
     }
 
     # Reach in case of failure
-    my $err = printf "Batch of messages could not been sent: %s", $@ || 'Unknown failure';
-    return (undef, $err);
+    printf STDERR "Batch of messages could not been sent: %s", $@ || 'Unknown failure';
+    return ();
 }
 
 sub delete {
 
-    my ($self, $m) = @_;
+    my ($self, $receipt) = @_;
     my $q = $self->{f_obtain_queue}();
 
     my $f_delete = sub {
-        $q->DeleteMessage($m);
+        $q->DeleteMessage($receipt);
 	return true;
     };
 
-    if (eval { return &$f_delete(); }) {
-        return undef;
+    unless (eval { return &$f_delete(); }) {
+        printf STDERR "Message with receipt %m could not be deleted: %s", $@ || 'Unknown failure';
     }
 
-    # Reach in case of failure
-    return $@ || 'Unknown failure';
+    return;
 }
 
 sub AUTOLOAD {
