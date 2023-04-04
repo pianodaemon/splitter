@@ -145,19 +145,27 @@ sub AUTOLOAD {
     (my $method = $AUTOLOAD) =~ s/.*:://s;
 
     # Load a couple of jsonified versions for this module's methods
-    if ($method =~ /^(receive|send)_json$/) {
+    if ($method =~ /^[a-z_]+as_json$/) {
 
         eval q{
 
             use JSON;
 
-            sub send_json {
+            sub send_as_json {
 
                 my $self = shift;
                 return $self->send(encode_json(shift));
             }
 
-            sub receive_json {
+            sub send_batch_as_json {
+
+                my ($self, $r_payloads) = @_;
+                my @payloads = map { encode_json($_) } @{$r_payloads};
+
+		return $self->send_batch(\@payloads);
+            }
+
+            sub receive_as_json {
 
                 my ($self, $f_on_receive) = @_;
                 my $f_on_receive_wrapper = sub {
