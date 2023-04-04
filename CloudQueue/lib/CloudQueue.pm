@@ -61,12 +61,12 @@ sub send {
         my $r_response;
         my $f_send = sub {
             $r_response = $q->SendMessage($m, ("MessageGroupId" => $self->{m_birth}));
-	    return true;
+            return true;
         };
 
         if (eval { return &$f_send(); }) {
             return $r_response->{MessageId};
-	}
+        }
     }
 
     # Reach in case of failure
@@ -111,7 +111,7 @@ sub send_batch {
         if (eval { return &$f_batch(); }) {
             my @responses = map { $_->{MessageId} } @{$r_resps};
             return @responses;
-	}
+        }
     }
 
     # Reach in case of failure
@@ -126,7 +126,7 @@ sub delete {
 
     my $f_delete = sub {
         $q->DeleteMessage($receipt);
-	return true;
+        return true;
     };
 
     unless (eval { return &$f_delete(); }) {
@@ -161,7 +161,7 @@ sub AUTOLOAD {
                 my ($self, $r_payloads) = @_;
                 my @payloads = map { encode_json($_) } @{$r_payloads};
 
-		return $self->send_batch(\@payloads);
+                return $self->send_batch(\@payloads);
             }
 
             sub receive_as_json {
