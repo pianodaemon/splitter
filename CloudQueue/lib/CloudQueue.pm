@@ -71,7 +71,8 @@ sub send {
     }
 
     # Reach in case of failure
-    return (undef, $@ || 'Unknown failure');
+    my $err = printf "Single message could not been sent: %s", $@ || 'Unknown failure';
+    return (undef, $err);
 }
 
 sub receive {
@@ -114,7 +115,8 @@ sub send_batch {
     }
 
     # Reach in case of failure
-    return (undef, $@ || 'Unknown failure');
+    my $err = printf "Batch of messages could not been sent: %s", $@ || 'Unknown failure';
+    return (undef, $err);
 }
 
 sub delete {
