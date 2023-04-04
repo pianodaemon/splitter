@@ -83,7 +83,7 @@ sub receive {
 
     if (defined $m) {
         &$f_on_receive($m->MessageBody());
-        return ($m->ReceiptHandle(), undef);
+        return $m->ReceiptHandle();
     }
 
     # Reach in case of failure
