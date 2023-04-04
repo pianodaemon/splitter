@@ -46,7 +46,6 @@ sub new {
    my $self = {
        m_birth        => time,
        m_queue_url    => $queue_url,
-       m_sqs          => $sqs,
        f_obtain_queue => sub { $sqs->GetQueue($queue_url); },
    };
 
@@ -88,6 +87,34 @@ sub receive {
 
     # Reach in case of failure
     return (undef, 'no messages to receive yet');
+}
+
+sub send_batch {
+
+    my ($self, $r_payloads) = @_;
+    my $q = $self->{f_obtain_queue}();
+
+    {
+        my $r_resps;
+        my $f_batch = sub {
+
+            my %opts;
+            for (my $idx = 1; $idx <= @{$r_payloads}; $idx++) {
+                $opts{"SendMessageBatchRequestEntry.$idx.MessageGroupId"} = $self->{m_birth};
+            }
+
+            $r_resps = $q->SendMessageBatch($r_payloads, %opts);
+            return true;
+        };
+
+        if (eval { return &$f_batch(); }) {
+            my @responses = map { $_->{MessageId} } @{$r_resps};
+            return (@responses, undef);
+	}
+    }
+
+    # Reach in case of failure
+    return (undef, $@ || 'Unknown failure');
 }
 
 sub delete {
