@@ -182,9 +182,9 @@ sub AUTOLOAD {
 
                 return $self->receive($f_on_receive_wrapper);
             }
-	};
-	cluck $@ if $@; # if typo snuck in
-	goto &{$method};
+        };
+        cluck $@ if $@; # if typo snuck in
+        goto &{$method};
     }
 }
 
