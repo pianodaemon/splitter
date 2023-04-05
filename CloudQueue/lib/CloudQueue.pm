@@ -128,6 +128,23 @@ sub delete {
     return;
 }
 
+sub purge {
+
+    my $self = shift;
+    my $q = $self->{f_obtain_queue}();
+
+    my $f_purge = sub {
+        $q->Purge();
+        return true;
+    };
+
+    unless (eval { return &$f_purge(); }) {
+        $debug and printf STDERR "The Purge could not be carried out: %s", $@ || 'Unknown failure';
+    }
+
+    return;
+}
+
 sub AUTOLOAD {
 
     our $AUTOLOAD;
