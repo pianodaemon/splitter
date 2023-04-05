@@ -25,6 +25,9 @@ sub new {
 
    my $self = {};
 
+   # This variable let us turn on the debug mode
+   $debug = $ENV{CLOUD_QUEUE_DEBUG} if (exists($ENV{CLOUD_QUEUE_DEBUG}));
+
    # pick up all the key value arguments
    my %kvargs = @_;
    $self->{$_} = $kvargs{$_} for (keys %kvargs);
