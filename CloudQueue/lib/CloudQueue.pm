@@ -9,12 +9,6 @@ use Amazon::SQS::Simple;
 
 our $VERSION = '0.01';
 
-# It stands for AWS IAM user keys.
-use constant {
-    AWS_SECRET_ACCESS_KEY => 'AWS_ACCESS_KEY_ID',
-    AWS_ACCESS_KEY_ID => 'AWS_SECRET_ACCESS_KEY',
-};
-
 # It stands for a simple boolean definition.
 use constant {
     true  => 1,
@@ -24,32 +18,24 @@ use constant {
 # It enables debugging verbosity
 our $debug = false;
 
-sub seek_evars_out {
-
-    my @evars = @_;
-    foreach (@evars) {
-        my $emsg = sprintf 'Environment variable %s is not present', $_;
-        die($emsg) if (not exists($ENV{$_}));
-    }
-}
-
 sub new {
 
-   # Searching for a few environment variables required
-   seek_evars_out(
-       (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID)
-   );
+   my $class = shift;
+   my $queue_url = shift;
 
-   my ($class, $queue_url) = @_;
+   my $self = {};
+
+   # pick up all the key value arguments
+   my %kvargs = @_;
+   $self->{$_} = $kvargs{$_} for (keys %kvargs);
+
    my $sqs = new Amazon::SQS::Simple(
-       SecretKey      => $ENV{AWS_SECRET_ACCESS_KEY},
-       AWSAccessKeyId => $ENV{AWS_ACCESS_KEY_ID}
+       SecretKey      => $self->{secret_access_key},
+       AWSAccessKeyId => $self->{access_key_id}
    );
 
-   my $self = {
-       m_birth        => time,
-       f_obtain_queue => sub { $sqs->GetQueue($queue_url); },
-   };
+   $self->{f_obtain_queue} = sub { $sqs->GetQueue($queue_url); };
+   $self->{m_birth} = time;
 
    bless $self, $class;
    return $self;
