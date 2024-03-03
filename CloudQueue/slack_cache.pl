@@ -116,6 +116,7 @@ sub retrieve_register {
     die "Cache register has expired.\n";
   }
 
+  print "Asking for content via cache\n";
   my $sref = retrieve($file_path);
   return $sref;
 }
@@ -149,7 +150,7 @@ my $shared_ref = lookup_shm($shared_memory_key, $cache_size, $mode_perms);
 my $src_url = "https://httpbin.org/get";
 my $kcache = md5_hex($src_url);
 my $kfpath = $kcache . ".cache";
-my $do_register = sub {
+my $do_registration = sub {
   create_register($kfpath, sub {
     return fetcher_http_get_method $src_url;
   });
@@ -164,12 +165,12 @@ RETRIEVE_POINT:
     $sref = retrieve_register $kfpath, 30;
   }) {
     $debug and printf STDERR "%s", $@ || 'Unknown failure';
-    &$do_register();
+    &$do_registration();
     goto RETRIEVE_POINT;
   }
   print $$sref;
 } else {
-  &$do_register();
+  &$do_registration();
   record($shared_ref, $kcache);
   goto RETRIEVE_POINT;
 }
