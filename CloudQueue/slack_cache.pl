@@ -3,7 +3,8 @@ use warnings;
 
 use lib qw(/home/pianodaemon/perl5/lib/perl5 ./temp/share/perl/5.30.0/ ./temp/lib/perl5);
 
-use Fcntl qw(:flock);
+use File::stat;
+use Fcntl qw(:flock :mode);
 use Storable;
 use IPC::Semaphore;
 use IPC::Shareable;
@@ -87,6 +88,26 @@ sub record {
   $shared_ref->{bloom_filter} = Storable::freeze($bf);
   tied(%$shared_ref)->unlock;
   return;
+}
+
+
+sub retrieve_register {
+  my ($file_path, $ttl_expected) = @_;
+
+  my $file_stat = stat($file_path);
+  unless ($file_stat) {
+    die "Failed to retrieve cache register $file_path: $!\n";
+  }
+
+  my $time_difference = time - $file_stat->mtime;
+
+  if ($time_difference > $ttl_expected) {
+    unlink $file_path;
+    die "Cache register has expired.\n";
+  }
+
+  my $sref = retrieve($file_path);
+  return $sref;
 }
 
 my $shared_memory_key = 12345;
