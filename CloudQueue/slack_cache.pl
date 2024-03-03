@@ -67,7 +67,7 @@ sub lookup_shm {
   die "Not possible to harness a share memory segment with key $shm_mem_key\n";
 }
 
-
+# Let us know if the cache key was spotted by the bloom filter
 sub is_spotted {
   my ($shared_ref, $k) = @_;
 
@@ -79,6 +79,7 @@ sub is_spotted {
 }
 
 
+# Let the bloom filter know about the cache key
 sub record {
   my ($shared_ref, $k) = @_;
 
@@ -91,6 +92,7 @@ sub record {
 }
 
 
+# It creates a cache register in the file system
 sub create_register {
   my ($file_path, $fetch_handler) = @_;
 
@@ -101,7 +103,7 @@ sub create_register {
   return;
 }
 
-
+# It retrieves a cache register from the file system
 sub retrieve_register {
   my ($file_path, $ttl_expected) = @_;
 
@@ -121,7 +123,7 @@ sub retrieve_register {
   return $sref;
 }
 
-
+# It obtains the requested item from the item cache subsystem
 sub obtain_from_icss {
   my ($shared_ref, $kcache, $fetch_handler) = @_;
   my $kfpath = $kcache . ".cache";
