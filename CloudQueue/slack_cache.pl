@@ -6,7 +6,7 @@ use lib qw(/home/pianodaemon/perl5/lib/perl5 ./temp/share/perl/5.30.0/ ./temp/li
 use File::stat;
 use Fcntl qw(:flock :mode);
 use Storable;
-use IPC::Semaphore;
+use Digest::MD5 qw(md5_hex);
 use IPC::Shareable;
 use Bloom::Filter;
 
@@ -120,28 +120,42 @@ sub retrieve_register {
   return $sref;
 }
 
+
+sub fetcher_http_get_method {
+  my $remote_url = shift;
+
+  use LWP::UserAgent;
+  my $ua = LWP::UserAgent->new;
+
+  print "Asking for remote content via http get\n";
+  my $get_response = $ua->get($remote_url);
+
+  if ($get_response->is_success) {
+    return \$get_response->decoded_content;
+  }
+
+  die "Failed to retrieve data. Error: ", $get_response->status_line, "\n";
+}
+
 my $shared_memory_key = 12345;
-my $semaphore_key = 67890;
 my $mode_perms = 0600;
 
 # Size of the shared memory segment for Bloom filter
 # 64K
 my $cache_size = 1<<16;
 
-
-
-
-#my $sem00 = lookup_sem($semaphore_key);
-#print $sem00;
-
 my $shared_ref = lookup_shm($shared_memory_key, $cache_size, $mode_perms);
 
-#my $bloom_filter = Storable::thaw($share_ref->{bloom_filter});
+my $src_url = "https://httpbin.org/get";
+my $kcache = md5_hex($src_url);
+my $kfpath = $kcache . ".cache";
+if ( is_spotted $shared_ref, $kcache ) {
 
-#record($shared_ref, 'example1');
-#record($shared_ref, 'example2');
-#record($shared_ref, 'magneto');
-
-print "Found \n" if is_spotted($shared_ref, 'example1');
-print "Found \n" if is_spotted($shared_ref, 'example2');
-print "Found \n" if is_spotted($shared_ref, 'magneto');
+  my $sref = retrieve_register $kfpath, 3600;
+  print $$sref;
+} else {
+  create_register($kfpath, sub {
+    return fetcher_http_get_method $src_url;
+  });
+  record($shared_ref, $kcache);
+}
