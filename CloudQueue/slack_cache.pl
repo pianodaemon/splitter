@@ -149,13 +149,27 @@ my $shared_ref = lookup_shm($shared_memory_key, $cache_size, $mode_perms);
 my $src_url = "https://httpbin.org/get";
 my $kcache = md5_hex($src_url);
 my $kfpath = $kcache . ".cache";
-if ( is_spotted $shared_ref, $kcache ) {
-
-  my $sref = retrieve_register $kfpath, 3600;
-  print $$sref;
-} else {
+my $do_register = sub {
   create_register($kfpath, sub {
     return fetcher_http_get_method $src_url;
   });
+  return;
+};
+
+if ( is_spotted $shared_ref, $kcache ) {
+
+RETRIEVE_POINT:
+  my $sref;
+  unless (eval {
+    $sref = retrieve_register $kfpath, 30;
+  }) {
+    $debug and printf STDERR "%s", $@ || 'Unknown failure';
+    &$do_register();
+    goto RETRIEVE_POINT;
+  }
+  print $$sref;
+} else {
+  &$do_register();
   record($shared_ref, $kcache);
+  goto RETRIEVE_POINT;
 }
