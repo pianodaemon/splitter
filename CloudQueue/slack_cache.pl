@@ -91,6 +91,17 @@ sub record {
 }
 
 
+sub create_register {
+  my ($file_path, $fetch_handler) = @_;
+
+  my $ref_content = &$fetch_handler();
+
+  # Serialize the data to disk
+  Storable::nstore($ref_content, $file_path);
+  return;
+}
+
+
 sub retrieve_register {
   my ($file_path, $ttl_expected) = @_;
 
