@@ -122,55 +122,60 @@ sub retrieve_register {
 }
 
 
-sub fetcher_http_get_method {
-  my $remote_url = shift;
+sub obtain_from_icss {
+  my ($shared_ref, $kcache, $fetch_handler) = @_;
+  my $kfpath = $kcache . ".cache";
+  my $do_registration = sub {
+    create_register($kfpath, $fetch_handler);
+    return;
+  };
 
-  use LWP::UserAgent;
-  my $ua = LWP::UserAgent->new;
-
-  print "Asking for remote content via http get\n";
-  my $get_response = $ua->get($remote_url);
-
-  if ($get_response->is_success) {
-    return \$get_response->decoded_content;
-  }
-
-  die "Failed to retrieve data. Error: ", $get_response->status_line, "\n";
-}
-
-my $shared_memory_key = 12345;
-my $mode_perms = 0600;
-
-# Size of the shared memory segment for Bloom filter
-# 64K
-my $cache_size = 1<<16;
-
-my $shared_ref = lookup_shm($shared_memory_key, $cache_size, $mode_perms);
-
-my $src_url = "https://httpbin.org/get";
-my $kcache = md5_hex($src_url);
-my $kfpath = $kcache . ".cache";
-my $do_registration = sub {
-  create_register($kfpath, sub {
-    return fetcher_http_get_method $src_url;
-  });
-  return;
-};
-
-if ( is_spotted $shared_ref, $kcache ) {
-
-RETRIEVE_POINT:
-  my $sref;
-  unless (eval {
-    $sref = retrieve_register $kfpath, 30;
-  }) {
-    $debug and printf STDERR "%s", $@ || 'Unknown failure';
+  if (is_spotted $shared_ref, $kcache) {
+    RETRIEVE_POINT:
+    my $sref;
+    unless (eval {
+      $sref = retrieve_register $kfpath, 30;
+    }) {
+      $debug and printf STDERR "%s", $@ || 'Unknown failure';
+      &$do_registration();
+      goto RETRIEVE_POINT;
+    }
+    print $$sref;
+  } else {
     &$do_registration();
+    record($shared_ref, $kcache);
     goto RETRIEVE_POINT;
   }
-  print $$sref;
-} else {
-  &$do_registration();
-  record($shared_ref, $kcache);
-  goto RETRIEVE_POINT;
+}
+
+
+# From this point onward it is mostly explanatory regarding its correct usage.
+{
+  use LWP::UserAgent;
+  sub fetcher_http_get_method {
+    my $remote_url = shift;
+    my $ua = LWP::UserAgent->new;
+
+    print "Asking for remote content via http get\n";
+    my $get_response = $ua->get($remote_url);
+
+    if ($get_response->is_success) {
+      return \$get_response->decoded_content;
+    }
+
+    die "Failed to retrieve data. Error: ", $get_response->status_line, "\n";
+  }
+
+  # Size of the shared memory segment for Bloom filter
+  # 64K
+  my $cache_size = 1<<16;
+  my $shared_memory_key = 12345;
+  my $mode_perms = 0600;
+  my $shared_ref = lookup_shm($shared_memory_key, $cache_size, $mode_perms);
+  my $src_url = "https://httpbin.org/get";
+  # It can be any digest function involving the esencial elements from the request
+  my $kcache = md5_hex($src_url);
+  obtain_from_icss($shared_ref, $kcache, sub {
+    return fetcher_http_get_method $src_url;
+  });
 }
