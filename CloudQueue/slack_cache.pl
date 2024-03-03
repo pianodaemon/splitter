@@ -100,7 +100,6 @@ sub retrieve_register {
   }
 
   my $time_difference = time - $file_stat->mtime;
-
   if ($time_difference > $ttl_expected) {
     unlink $file_path;
     die "Cache register has expired.\n";
